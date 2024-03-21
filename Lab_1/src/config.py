@@ -1,3 +1,4 @@
+# pylint: disable=all
 """Config file"""
 import os
 

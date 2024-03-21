@@ -1,3 +1,4 @@
+# pylint: disable=all
 from paho.mqtt import client as mqtt_client
 import json
 import time
