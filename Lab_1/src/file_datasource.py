@@ -19,6 +19,7 @@ class FileDatasource:
         self.gps_filename = gps_filename
         self.accelerometer_data = None
         self.gps_data = None
+        self.reading = False
 
     def read(self) -> AggregatedData:
         """Метод повертає дані отримані з датчиків"""
@@ -32,36 +33,75 @@ class FileDatasource:
             config.USER_ID,
         )
 
-    def read_csv_file(self, file_path: str) -> list[list[str]]:
-        """Читає дані з CSV-файлу та повертає список рядків."""
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"File '{file_path}' not found.")
-        
+    def read_csv_file_gps(self, file_path):
+        """Читає дані з CSV-файлу та повертає список словників."""
         data = []
-        with open(file_path, newline='') as csvfile:
-            csv_reader = csv.reader(csvfile)
-            for row in csv_reader:
-                data.append(row)
+        try:
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                next(csv_reader)  
+                for row in csv_reader:
+                    n, k = map(float, row)
+                    data.append({'longitude': n, 'latitude': k})
+        except FileNotFoundError:
+            print(f"Файл '{file_path}' не знайдено.")
+        except Exception as e:
+            print(f"Виникла помилка під час читання файлу: {e}")
         return data
     
-    def start_reading(self):
+    def read_csv_file(self, file_path):
+        """Читає дані з CSV-файлу та повертає список словників."""
+        data = []
+        try:
+            with open(file_path, newline='') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                next(csv_reader)  
+                for row in csv_reader:
+                    x, y, z = map(int, row)
+                    data.append({'x': x, 'y': y, 'z': z})
+        except FileNotFoundError:
+            print(f"Файл '{file_path}' не знайдено.")
+        except Exception as e:
+            print(f"Виникла помилка під час читання файлу: {e}")
+        return data
+
+    def startReading(self):
         """Починає зчитування файлів"""
+        if self.reading:
+            print("Already reading.")
+            return
+        self.reading = True
         self.accelerometer_data = self.read_csv_file(self.accelerometer_filename)
-        self.gps_data = self.read_csv_file(self.gps_filename)
+        self.gps_data = self.read_csv_file_gps(self.gps_filename)
     
-    def stop_reading(self):
+    def stopReading(self):
         """Закінчує зчитування файлів"""
-        self.accelerometer_data = None
-        self.gps_data = None
+        self.reading = False
+
+
+
+
+# def print_sensor_data(data):
+#     """Виводить дані акселерометра."""
+#     for item in data:
+#         print(item)
     
 
-accelerometer_file_path = 'data/accelerometer.csv'
-gps_file_path = 'data/gps.csv'
+#accelerometer_file_path = 'data/accelerometer.csv'
+# gps_file_path = 'data/gps.csv'
 
-file_datasource = FileDatasource(accelerometer_filename=accelerometer_file_path, gps_filename=gps_file_path)
+#FileDatasource(accelerometer_filename=accelerometer_file_path, gps_filename=gps_file_path)
 
-file_datasource.start_reading()
+#file_datasource.startReading()  
 
-aggregated_data = file_datasource.read()
+#aggregated_data = file_datasource.read()
 
-file_datasource.stop_reading()
+
+# print("Дані акселерометра:")
+# print_sensor_data(file_datasource.accelerometer_data)
+
+
+# print("Дані GPS:")
+# print_sensor_data(file_datasource.gps_data)
+
+#file_datasource.stopReading()
