@@ -31,8 +31,9 @@ def publish(client, topic, datasource, delay):
         time.sleep(delay)
         accelerometer_data = datasource.read_csv_file(datasource.accelerometer_filename)
         gps_data = datasource.read_csv_file(datasource.gps_filename)
+        parking_data = datasource.read_csv_file(datasource.parking_filename)
 
-        for accel_data, gps_data in zip(accelerometer_data, gps_data):
+        for accel_data, gps_data, parking_data in zip(accelerometer_data, gps_data, parking_data):
             data = {
                 "accelometer": {
                     "x": accel_data[0],
@@ -42,6 +43,13 @@ def publish(client, topic, datasource, delay):
                 "gps": {
                     "longitude": gps_data[0],
                     "latitude": gps_data[1]
+                },
+                "parking": {
+                    "empty_count": parking_data[0],
+                    "gps": { 
+                        "longitude": parking_data[1],
+                        "latitude": parking_data[2]
+                    }
                 }
             }
 
@@ -58,7 +66,7 @@ def run():
     # Prepare mqtt client
     client = connect_mqtt(config.MQTT_BROKER_HOST, config.MQTT_BROKER_PORT)
     # Prepare datasource
-    datasource = FileDatasource("data/accelerometer.csv", "data/gps.csv")
+    datasource = FileDatasource("data/accelerometer.csv", "data/gps.csv", "data/parking.csv")
     # Infinity publish data
 
     publish(client, config.MQTT_TOPIC, datasource, config.DELAY)
