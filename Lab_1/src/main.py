@@ -29,17 +29,29 @@ def publish(client, topic, datasource, delay):
     datasource.startReading()
     while True:
         time.sleep(delay)
-        data = datasource.read()
-        msg = AggregatedDataSchema().dumps(data)
-        result = client.publish(topic, msg)
-        # result: [0, 1]
-        status = result[0]
-        if status == 0:
-            pass
-            print(f"Send `{msg}` to topic `{topic}`")
-            #print(data)
-        else:
-            print(f"Failed to send message to topic {topic}")
+        accelerometer_data = datasource.read_csv_file(datasource.accelerometer_filename)
+        gps_data = datasource.read_csv_file(datasource.gps_filename)
+
+        for accel_data, gps_data in zip(accelerometer_data, gps_data):
+            data = {
+                "accelometer": {
+                    "x": accel_data[0],
+                    "y": accel_data[1],
+                    "z": accel_data[2]
+                },
+                "gps": {
+                    "longitude": gps_data[0],
+                    "latitude": gps_data[1]
+                }
+            }
+
+            msg = json.dumps(data)
+            result = client.publish(topic, msg)
+            status = result[0]
+            if status == 0:
+                print(f"Send `{msg}` to topic `{topic}`")
+            else:
+                print(f"Failed to send message to topic {topic}")
 
 
 def run():

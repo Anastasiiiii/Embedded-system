@@ -33,37 +33,58 @@ class FileDatasource:
             config.USER_ID,
         )
 
-    def read_csv_file_gps(self, file_path):
-        """Читає дані з CSV-файлу та повертає список словників."""
-        data = []
-        try:
-            with open(file_path, newline='') as csvfile:
-                csv_reader = csv.reader(csvfile)
-                next(csv_reader)  
-                for row in csv_reader:
-                    n, k = map(float, row)
-                    data.append({'longitude': n, 'latitude': k})
-        except FileNotFoundError:
-            print(f"Файл '{file_path}' не знайдено.")
-        except Exception as e:
-            print(f"Виникла помилка під час читання файлу: {e}")
-        return data
+    # def read_csv_file_gps(self, file_path):
+    #     """Читає дані з CSV-файлу та повертає список словників."""
+    #     data = []
+    #     try:
+    #         with open(file_path, newline='') as csvfile:
+    #             csv_reader = csv.reader(csvfile)
+    #             next(csv_reader)  
+    #             for row in csv_reader:
+    #                 n, k = map(float, row)
+    #                 data.append({'longitude': n, 'latitude': k})
+    #     except FileNotFoundError:
+    #         print(f"Файл '{file_path}' не знайдено.")
+    #     except Exception as e:
+    #         print(f"Виникла помилка під час читання файлу: {e}")
+    #     return data
     
+    # def read_csv_file(self, file_path):
+    #     """Читає дані з CSV-файлу та повертає список словників."""
+    #     data = []
+    #     try:
+    #         with open(file_path, newline='') as csvfile:
+    #             csv_reader = csv.reader(csvfile)
+    #             next(csv_reader)  
+    #             for row in csv_reader:
+    #                 x, y, z = map(int, row)
+    #                 data.append({'x': x, 'y': y, 'z': z})
+    #     except FileNotFoundError:
+    #         print(f"Файл '{file_path}' не знайдено.")
+    #     except Exception as e:
+    #         print(f"Виникла помилка під час читання файлу: {e}")
+    #     return data
+
     def read_csv_file(self, file_path):
-        """Читає дані з CSV-файлу та повертає список словників."""
+        """Читає дані з CSV-файлу та повертає список кортежів."""
         data = []
         try:
             with open(file_path, newline='') as csvfile:
                 csv_reader = csv.reader(csvfile)
-                next(csv_reader)  
+                next(csv_reader)
                 for row in csv_reader:
-                    x, y, z = map(int, row)
-                    data.append({'x': x, 'y': y, 'z': z})
+                    # Якщо це дані прискорювача
+                    if self.accelerometer_filename in file_path:
+                        data.append(tuple(map(int, row)))
+                    # Якщо це GPS-дані
+                    elif self.gps_filename in file_path:
+                        data.append(tuple(map(float, row)))
         except FileNotFoundError:
             print(f"Файл '{file_path}' не знайдено.")
         except Exception as e:
             print(f"Виникла помилка під час читання файлу: {e}")
         return data
+
 
     def startReading(self):
         """Починає зчитування файлів"""
@@ -72,7 +93,7 @@ class FileDatasource:
             return
         self.reading = True
         self.accelerometer_data = self.read_csv_file(self.accelerometer_filename)
-        self.gps_data = self.read_csv_file_gps(self.gps_filename)
+        self.gps_data = self.read_csv_file(self.gps_filename)
     
     def stopReading(self):
         """Закінчує зчитування файлів"""
