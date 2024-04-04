@@ -5,7 +5,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPExcept
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
 from sqlalchemy.orm import Session, declarative_base
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.declarative import declared_attr 
 import json
 
 from config import (
@@ -88,6 +88,10 @@ async def websocket_endpoint(websocket: WebSocket):
 async def send_data_to_subscribers(data, db):
     for websocket in subscriptions:
         await websocket.send_json(data)
+
+@app.post("/protected_route/")
+def protected_route():
+    return {"message": "Protected route accessed successfully"}
 
 # FastAPI CRUDL endpoints
 @app.post("/processed_agent_data/")
