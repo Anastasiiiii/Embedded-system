@@ -24,8 +24,6 @@ redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT)
 # Create an instance of the StoreApiAdapter using the configuration
 store_adapter = StoreApiAdapter(api_base_url=STORE_API_BASE_URL)
 
-# Create an instance of the AgentMQTTAdapter using the configuration
-# FastAPI
 app = FastAPI()
 
 @app.post("/processed_agent_data/")
