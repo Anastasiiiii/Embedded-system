@@ -18,7 +18,7 @@ from config import (
 
 # SQLAlchemy setup
 DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 Base = declarative_base()
 
 # Define the ProcessedAgentData table
@@ -32,7 +32,7 @@ class ProcessedAgentData(Base):
     z = Column(Float)
     latitude = Column(Float)
     longitude = Column(Float)
-    timestamp = Column(DateTime, default=datetime.now)
+    timestamp = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 # FastAPI models
 class AccelerometerData(BaseModel):
@@ -93,7 +93,7 @@ async def send_data_to_subscribers(data, db):
 @app.post("/processed_agent_data/")
 async def create_processed_agent_data(data: List[ProcessedAgentDataInDB], db: Session = Depends(get_db)):
     for item in data:
-        db_item = ProcessedAgentData(**item.dict(), timestamp=datetime.now())
+        db_item = ProcessedAgentData(**item.dict())
         db.add(db_item)
     db.commit()
     await send_data_to_subscribers(data, db)
